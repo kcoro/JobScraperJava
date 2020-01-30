@@ -24,13 +24,25 @@ public class JobScraper {
             jobURL = job.select("a.s-link").attr("href");
             jobURL = "https://stackoverflow.com" + jobURL;
 
-            System.out.println("Job Title: " + jobTitle);
-            System.out.println("Job Location: " + jobLocation);
-            System.out.println("Company: " + company);
-            System.out.println("Link to job desc: " + jobURL);
-
+            // Write each job element to CSV file
             outputToCSV(jobTitle, jobLocation, company, jobURL, userFileName);
+        }
+    }
 
+    /* Parse Jsoup Documents for indeed job titles,
+     * job locations, and URL to job posting.  Appends output
+     * per job to CSV file.
+     */
+    public static void indeedJobs(Document doc, String userFileName) {
+        for (Element job : doc.select("div.jobsearch-SerpJobCard")) {
+            jobTitle = job.select("a.jobtitle").text();
+            jobLocation = job.select("span.location").text();
+            company = job.select("span.company").text();
+            jobURL = job.select("a.jobtitle").attr("href");
+            jobURL = "https://www.indeed.com/viewjob" + jobURL;
+
+            // Write each job element to CSV file
+            outputToCSV(jobTitle, jobLocation, company, jobURL, userFileName);
         }
     }
 
@@ -38,14 +50,15 @@ public class JobScraper {
      * job locations, and URL to job posting.  Appends output
      * per job to CSV file.
      */
-    public static void monsterJobs(Document doc, String fileName) {
+    public static void monsterJobs(Document doc, String userFileName) {
         for (Element job : doc.select("div.flex-row")) {
-            jobTitle = job.getElementById("a").text();
-            jobLocation = job.select("company.name").text();
-            //company = doc.getElementByClass("company");
-            //jobURL = doc.getElementById("");
-            System.out.println("Job Title: " + jobTitle);
-            System.out.println("Job Location: " + jobLocation);
+            jobTitle = job.select("a").text();
+            jobLocation = job.select("div.location").select("span.name").text();
+            company = job.select("div.company").select("span.name").text();
+            jobURL = job.select("a").attr("href");
+            
+            // Write each job element to CSV file
+            outputToCSV(jobTitle, jobLocation, company, jobURL, userFileName);
         }
     }
 
@@ -93,10 +106,10 @@ public class JobScraper {
         }
     }
 
-    public static void main(String[] args) {
-        String monsterURL = "https://www.monster.com/jobs/search/?q=Software+Engineer&where=North-Carolina";
-        String stackOverflowURL = "https://stackoverflow.com/jobs?q=Software+Engineer&l=North+Carolina%2C+USA&d=20&u=Miles";
-        String indeedURL = "https://www.indeed.com/jobs?q=software+engineer&l=Raleigh,+NC&explvl=entry_level";
+    public static void main(String[] args) throws IOException {
+        String monsterUrl = "https://www.monster.com/jobs/search/?q=Software+Engineer&where=North-Carolina";
+        String stackOverflowUrl = "https://stackoverflow.com/jobs?q=Software+Engineer&l=North+Carolina%2C+USA&d=20&u=Miles";
+        String indeedUrl = "https://www.indeed.com/jobs?q=software+engineer&l=Raleigh,+NC&explvl=entry_level";
         String header = "FIX ME: Insert fake user agent here.";
         String userJobTitle = "";
         String userLocation = "";
@@ -121,6 +134,11 @@ public class JobScraper {
             userFileName = scnr.nextLine();
         }
         
+        // Update job sites default url with user input query parameters
+        monsterUrl = "https://www.monster.com/jobs/search/?q="+userJobTitle+"&where="+userLocation;
+        stackOverflowUrl = "https://stackoverflow.com/jobs?q="+userJobTitle+"&l="+userLocation+"%2C+USA&d=20&u=Miles";
+        indeedUrl = "https://www.indeed.com/jobs?q="+userJobTitle+"&l="+userLocation+"&explvl=entry_level";
+
         // Output app info and user input
         System.out.print("Job Scraper v1 using jsoup.\nSearching for . . .\n");
         System.out.printf("job title: %s\n", userJobTitle);
@@ -128,14 +146,17 @@ public class JobScraper {
 
         try {
             // Jsoup gets HTML from each Jobsite's URL
-            Document stackOverflowDoc = Jsoup.connect(stackOverflowURL).timeout(1000000).get();
-            //indeedDoc = Jsoup.connect(indeedURL).get();
+            Document stackOverflowDoc = Jsoup.connect(stackOverflowUrl).timeout(1000000).get();
+            Document indeedDoc = Jsoup.connect(indeedUrl).timeout(1000000).get();
+            Document monsterDoc = Jsoup.connect(monsterUrl).timeout(1000000).get();
 
             // Initialize csv file to put header info before adding jobs
             initCSV(userFileName);
 
             // Run JobScraper on Job Boards
             stackOverflowJobs(stackOverflowDoc, userFileName);
+            indeedJobs(indeedDoc, userFileName);
+            monsterJobs(monsterDoc, userFileName);
         }
         catch (Exception e) {
             System.out.println("Error could not connect: " + e);
