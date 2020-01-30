@@ -18,9 +18,9 @@ public class JobScraper {
      */
     public static void stackOverflowJobs(Document doc, String userFileName) {
         for (Element job : doc.select("div.-job")) {
-            jobTitle = job.select("a.s-link").text();
-            jobLocation = job.select("h3.fc-black-700").select("span.fc-black-500").text();
-            company = job.select("h3.fc-black-700").select("span").text();
+            jobTitle = job.select("a.s-link").text().replace(",", " ");
+            jobLocation = job.select("h3.fc-black-700").select("span.fc-black-500").text().replace(",", " ");
+            company = job.select("h3.fc-black-700").select("span").text().replace(",", " ");
             jobURL = job.select("a.s-link").attr("href");
             jobURL = "https://stackoverflow.com" + jobURL;
 
@@ -35,9 +35,9 @@ public class JobScraper {
      */
     public static void indeedJobs(Document doc, String userFileName) {
         for (Element job : doc.select("div.jobsearch-SerpJobCard")) {
-            jobTitle = job.select("a.jobtitle").text();
-            jobLocation = job.select("span.location").text();
-            company = job.select("span.company").text();
+            jobTitle = job.select("a.jobtitle").text().replace(",", " ");
+            jobLocation = job.select("span.location").text().replace(",", " ");
+            company = job.select("span.company").text().replace(",", " ");
             jobURL = job.select("a.jobtitle").attr("href");
             jobURL = "https://www.indeed.com/viewjob" + jobURL;
 
@@ -52,9 +52,9 @@ public class JobScraper {
      */
     public static void monsterJobs(Document doc, String userFileName) {
         for (Element job : doc.select("div.flex-row")) {
-            jobTitle = job.select("a").text();
-            jobLocation = job.select("div.location").select("span.name").text();
-            company = job.select("div.company").select("span.name").text();
+            jobTitle = job.select("a").text().replace(",", " ");
+            jobLocation = job.select("div.location").select("span.name").text().replace(",", " ");
+            company = job.select("div.company").select("span.name").text().replace(",", " ");
             jobURL = job.select("a").attr("href");
             
             // Write each job element to CSV file
